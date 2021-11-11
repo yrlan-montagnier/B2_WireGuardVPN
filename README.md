@@ -52,37 +52,78 @@ ssh (active)
 
 # **Installation de WireGuard**
 ## Mise a jour du sytème + install de wireguard via le repo d'epel-release
-```
+```bash
 [yrlan@wireguard ~]$ sudo dnf update -y
 [yrlan@wireguard ~]$ sudo dnf install -y elrepo-release epel-release
 [yrlan@wireguard ~]$ sudo dnf install -y kmod-wireguard wireguard-tools
 ```
 
 # **Configuration de WireGuard**
-## **Génerer des clés publiques/privées**
-
-### Générer une clé privée
+## Génerer des clés privées/publiques
 ```bash
-[yrlan@wireguard ~]$ umask 077 | wg genkey | sudo tee /etc/wireguard/wireguard.key
-UKjxKhJO51+YLc2H4sgvyyqBOyHr+ksbMH2XsXGm4lQ=
-[yrlan@wireguard ~]$ sudo cat /etc/wireguard/wireguard.key
-UKjxKhJO51+YLc2H4sgvyyqBOyHr+ksbMH2XsXGm4lQ=
-```
-
-### Génerer une clé publique à partir de notre clé privée
-```bash
-## On passe en root
+# On passe en root pour la génération de clés
 [yrlan@wireguard ~]$ su
 Password:
+[root@wireguard yrlan]# mkdir /etc/wireguard
 
-## La commande wg pubkey génère une clé publique à partir de la clé privée
-[root@wireguard yrlan]# wg pubkey < /etc/wireguard/wireguard.key > /etc/wireguard/wireguard.pub.key
+# On génère une clé privée dans le fichier /etc/wireguard/wireguard.key puis une clé publique à partir de celui-ci
+[root@wireguard yrlan]# wg genkey | tee /etc/wireguard/wireguard.key | wg pubkey > /etc/wireguard/wireguard.pub.key
 
-## On vérifie que la clé a bien été crée puis son contenu
+# On peut voir le contenu de ces clés
+[root@wireguard yrlan]# cat /etc/wireguard/wireguard.key
+UEiwiLqazX3KlMpzXPUt77IQ/uwBc1s8++wzrOuu2Hg=
+[root@wireguard yrlan]# cat /etc/wireguard/wireguard.pub.key
+k+py72wlbBqjN+B3UKE/7EAMozLkgGXOhT0v3OKD7VY=
+
 [root@wireguard yrlan]# sudo ls -l /etc/wireguard/
-total 8
--rw-------. 1 root root 45 Nov 11 17:37 wireguard_prv.key
--rw-r--r--. 1 root root 45 Nov 11 17:39 wireguard.pub.key
-[root@wireguard yrlan]# sudo cat /etc/wireguard/wireguard.pub.key
-hIX/nUDrPWiECz+/xDXAM0Zu9QG7e6KRY/LgqTvETDo=
+total 12
+-rw-------. 1 root root  45 Nov 11 17:58 wireguard.key
+-rw-r--r--. 1 root root  45 Nov 11 17:58 wireguard.pub.key
+```
+
+## Création d'un fichier de configuration pour notre serveur WireGuard
+
+> Ici nous utiliserons **`wg0.conf`** comme nom pour le fichier de conf (**interface `wg0`**) qui est un nom **recommandé pour les interfaces réseaux par WireGuard**
+
+> **Ce fichier sera modifié plus tard pour y intégrer les clients de notre serveur VPN**
+
+> :file_folder:	 **Fichier [`wg0.conf`](./conf/wg0.conf)**
+```bash
+cat /etc/wireguard/wg0.conf
+[Interface]
+Address = 10.10.10.1/24
+SaveConfig = true
+PostUp = firewall-cmd --add-port=51820/udp; firewall-cmd --zone=DROP --add-masquerade; firewall-cmd --direct --add-rule ipv4 filter FORWARD 0 -i wg0 -o eth0 -j ACCEPT; firewall-cmd --direct --add-rule ipv4 nat POSTROUTING 0 -o eth0 -j MASQUERADE
+PostDown = firewall-cmd --remove-port=51820/udp; firewall-cmd --zone=DROP --remove-masquerade; firewall-cmd --direct --remove-rule ipv4 filter FORWARD 0 -i wg0 -o eth0 -j ACCEPT; firewall-cmd --direct --remove-rule ipv4 nat POSTROUTING 0-o eth0 -j MASQUERADE
+ListenPort = 51820
+PrivateKey = UEiwiLqazX3KlMpzXPUt77IQ/uwBc1s8++wzrOuu2Hg=
+DNS = 8.8.8.8
+```
+
+## Activation IP Forwarding
+```
+[root@wireguard yrlan]# echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
+[root@wireguard yrlan]# sysctl -p
+net.ipv4.ip_forward = 1
+```
+
+## Lancement du serveur WireGuard
+```
+[root@wireguard yrlan]# wg-quick up wg0
+[#] ip link add wg0 type wireguard
+[#] wg setconf wg0 /dev/fd/63
+[#] ip -4 address add 10.10.10.1/24 dev wg0
+[#] ip link set mtu 1420 up dev wg0
+[#] mount `8.8.8.8' /etc/resolv.conf
+[#] firewall-cmd --add-port=51820/udp; firewall-cmd --zone=DROP --add-masquerade; firewall-cmd --direct --add-rule ipv4 filter FORWARD 0 -i wg0 -o eth0 -j ACCEPT; firewall-cmd --direct --add-rule ipv4 nat POSTROUTING 0 -o eth0 -j MASQUERADE
+success
+success
+success
+success
+
+[root@wireguard yrlan]# ip add show wg0
+9: wg0: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1420 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/none
+    inet 10.10.10.1/24 scope global wg0
+       valid_lft forever preferred_lft forever
 ```
