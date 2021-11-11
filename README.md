@@ -7,13 +7,38 @@
 
 ## Paramètres réseaux + hostname
 
-> **Sur VirtualBox : Carte NAT + Host-only = `192.168.100.1`**
+> **Sur VirtualBox : Carte NAT + 2 Host-only : `192.168.100.1/24` & `10.10.10.1/24`**
 
 ```bash
-# Configuration du hostname
+# Coté serveur
 [yrlan@patron ~]$ sudo hostnamectl set-hostname wireguard.server
-# Adresse ipv4
-[yrlan@wireguard ~]$ sudo nmcli connection modify enp0s8 ipv4.addresses 192.168.100.250/24
+
+[root@wireguard yrlan]# ip a show enp0s3 && ip a show enp0s8
+2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:34:8f:b1 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic noprefixroute enp0s3
+       valid_lft 85914sec preferred_lft 85914sec
+3: enp0s8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:3a:a0:a4 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.100.250/24 brd 192.168.100.255 scope global noprefixroute enp0s8
+       valid_lft forever preferred_lft forever
+       
+# Coté client
+[yrlan@patron ~]$ sudo hostnamectl set-hostname wireguard.client
+
+[yrlan@wireguard ~]$ ip a show enp0s3 && ip a show enp0s8
+2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:93:d4:ae brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic noprefixroute enp0s3
+       valid_lft 86184sec preferred_lft 86184sec
+    inet6 fe80::a00:27ff:fe93:d4ae/64 scope link noprefixroute
+       valid_lft forever preferred_lft forever
+3: enp0s8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:c9:0c:f5 brd ff:ff:ff:ff:ff:ff
+    inet 10.10.10.10/24 brd 10.10.10.255 scope global noprefixroute enp0s8
+       valid_lft forever preferred_lft forever
+    inet6 fe80::a00:27ff:fec9:cf5/64 scope link
+       valid_lft forever preferred_lft forever
 ```
 
 ## Configuration de base du pare-feu
@@ -52,6 +77,8 @@ ssh (active)
 
 # **Installation de WireGuard**
 ## Mise a jour du sytème + install de wireguard via le repo d'epel-release
+
+> **Sur les VM serveur ET client**
 ```bash
 [yrlan@wireguard ~]$ sudo dnf update -y
 [yrlan@wireguard ~]$ sudo dnf install -y elrepo-release epel-release
@@ -60,13 +87,9 @@ ssh (active)
 
 # **Configuration de WireGuard**
 ## Génerer des clés privées/publiques
-```bash
-# On passe en root pour la génération de clés
-[yrlan@wireguard ~]$ su
-Password:
-[root@wireguard yrlan]# mkdir /etc/wireguard
 
-# On génère une clé privée dans le fichier /etc/wireguard/wireguard.key puis une clé publique à partir de celui-ci
+- **On génère une clé privée dans le fichier `/etc/wireguard/wireguard.key` puis une clé publique dans `/etc/wireguard/wireguard.pub.key` à partir de celui-ci**
+```bash
 [root@wireguard yrlan]# wg genkey | tee /etc/wireguard/wireguard.key | wg pubkey > /etc/wireguard/wireguard.pub.key
 
 # On peut voir le contenu de ces clés
@@ -87,18 +110,7 @@ total 12
 
 > **Ce fichier sera modifié plus tard pour y intégrer les clients de notre serveur VPN**
 
-> :file_folder:	 **Fichier [`wg0.conf`](./conf/wg0.conf)**
-```bash
-cat /etc/wireguard/wg0.conf
-[Interface]
-Address = 10.10.10.1/24
-SaveConfig = true
-PostUp = firewall-cmd --add-port=51820/udp; firewall-cmd --zone=DROP --add-masquerade; firewall-cmd --direct --add-rule ipv4 filter FORWARD 0 -i wg0 -o eth0 -j ACCEPT; firewall-cmd --direct --add-rule ipv4 nat POSTROUTING 0 -o eth0 -j MASQUERADE
-PostDown = firewall-cmd --remove-port=51820/udp; firewall-cmd --zone=DROP --remove-masquerade; firewall-cmd --direct --remove-rule ipv4 filter FORWARD 0 -i wg0 -o eth0 -j ACCEPT; firewall-cmd --direct --remove-rule ipv4 nat POSTROUTING 0-o eth0 -j MASQUERADE
-ListenPort = 51820
-PrivateKey = UEiwiLqazX3KlMpzXPUt77IQ/uwBc1s8++wzrOuu2Hg=
-DNS = 8.8.8.8
-```
+> :file_folder:	 **Fichier [`wg0.conf`](./conf/wg0.conf)** dans `/etc/wireguard/wg0.conf`
 
 ## Activation IP Forwarding
 ```
@@ -122,7 +134,7 @@ success
 success
 
 [root@wireguard yrlan]# ip add show wg0
-9: wg0: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1420 qdisc noqueue state UNKNOWN group default qlen 1000
+4: wg0: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1420 qdisc noqueue state UNKNOWN group default qlen 1000
     link/none
     inet 10.10.10.1/24 scope global wg0
        valid_lft forever preferred_lft forever
