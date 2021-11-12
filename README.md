@@ -117,7 +117,7 @@ net.ipv4.ip_forward = 1
 ## Création d'un fichier de configuration pour nos clients WireGuard
 
 > :computer: **wireguard.client**
-
+> 
 > :file_folder:	 **Fichier [`wg0.conf`](./conf/client_wg0.conf)** dans `/etc/wireguard/wg0.conf`
 
 
