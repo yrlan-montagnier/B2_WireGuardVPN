@@ -1,11 +1,22 @@
-# B2 WireguardVPN - MONTAGNIER Yrlan & ABEILLE Paul-antoine
-# **Sommaire**
+# B2 WireguardVPN - Installation
+# Sommaire
 
-# **Configuration de base de la machine**
+# Configuration de base de la machine
 
-## Paramètres réseaux + hostname
+## **Paramètres réseaux + hostname**
 
 > **Sur VirtualBox : Carte NAT + 1 Host-only : `192.168.100.1/24`**
+> 
+> **Seul le serveur possède une carte NAT**
+
+### **Tableau d'adressage**
+
+| Interface 	   | `wireguard.server`   | `wireguard.client`   | `wireguard.client2` |
+| ---------------- | -------- 			  | -------- 			 | -------- 		   |
+| NAT       	   | Oui      			  | X        			 | X        		   |
+| Host-Only        | `192.168.100.250/24` | `192.168.100.251/24` | `192.168.100.252/24`|
+| wg01 (wireguard) | `10.10.10.1`         | `10.10.10.10`        | `10.10.10.20`       |
+
 
 - :computer: **wireguard.server**
     ```bash
@@ -25,18 +36,12 @@
            valid_lft forever preferred_lft forever
      ```
 - :computer: **wireguard.client**
-     ```bash
+    ```bash
     # On choisit un hostname
     [yrlan@patron ~]$ sudo hostnamectl set-hostname wireguard.client
-    # Carte NAT
-    [yrlan@wireguard ~]$ ip a show enp0s3 && ip a show enp0s8
-    2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
-        link/ether 08:00:27:93:d4:ae brd ff:ff:ff:ff:ff:ff
-        inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic noprefixroute enp0s3
-           valid_lft 86239sec preferred_lft 86239sec
-        inet6 fe80::a00:27ff:fe93:d4ae/64 scope link noprefixroute
-    # Host-Only
-           valid_lft forever preferred_lft forever
+    
+    # Carte Host-Only
+    [yrlan@wireguard ~]$ ip a show enp0s8
     3: enp0s8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
         link/ether 08:00:27:c9:0c:f5 brd ff:ff:ff:ff:ff:ff
         inet 192.168.100.251/24 brd 192.168.100.255 scope global noprefixroute enp0s8
@@ -62,7 +67,6 @@
 
 > :computer: **Sur les VM serveur ET client**
 - **On génère une clé privée dans le fichier `/etc/wireguard/wireguard.key` puis une clé publique dans `/etc/wireguard/wireguard.pub.key` à partir de celui-ci**
-
     - **:computer: `wireguard.server`**
     ```bash
     [yrlan@wireguard ~]$ sudo chown yrlan /etc/wireguard/
@@ -115,7 +119,10 @@
 
 # **Vérifications**
 
-- **Vérifier la connexion entre le serveur et le client**
+On peut vérifier les connexions actives à l'aide de la commande `wg show`
+
+
+- **Vérifier la connexion entre le serveur et les clients**
     - :computer: **wireguard.server**
     ```bash
     [yrlan@wireguard ~]$ sudo wg show
@@ -146,7 +153,7 @@
 
     peer: k+py72wlbBqjN+B3UKE/7EAMozLkgGXOhT0v3OKD7VY=
       endpoint: 192.168.100.250:51820
-      allowed ips: 10.10.10.0/24
+      allowed ips: 0.0.0.0/0
       latest handshake: 21 seconds ago
       transfer: 820 B received, 1.40 KiB sent
       persistent keepalive: every 20 seconds*
@@ -161,12 +168,11 @@
 
     peer: k+py72wlbBqjN+B3UKE/7EAMozLkgGXOhT0v3OKD7VY=
       endpoint: 192.168.100.250:51820
-      allowed ips: 10.10.10.0/24
+      allowed ips: 0.0.0.0/0
       latest handshake: 1 second ago
       transfer: 852 B received, 1.37 KiB sent
       persistent keepalive: every 20 seconds
     ```
-
 - **`systemctl status`**
     - :computer: **wireguard.server**
     ```bash
@@ -214,7 +220,7 @@
     Nov 12 19:50:46 wireguard.client wg-quick[1052]: [#] ip -4 address add 10.10.10.10 dev wg0
     Nov 12 19:50:47 wireguard.client wg-quick[1052]: [#] ip link set mtu 1420 up dev wg0
     Nov 12 19:50:47 wireguard.client wg-quick[1052]: [#] mount `8.8.8.8' /etc/resolv.conf
-    Nov 12 19:50:47 wireguard.client wg-quick[1052]: [#] ip -4 route add 10.10.10.0/24 dev wg0
+    Nov 12 19:50:47 wireguard.client wg-quick[1052]: [#] ip -4 route add 0.0.0.0/0 dev wg0
     Nov 12 19:50:47 wireguard.client systemd[1]: Started WireGuard via wg-quick(8) for wg0.
     ```
     - :computer: **wireguard.client2**
@@ -240,7 +246,7 @@
     Nov 13 17:10:50 wireguard.client2 wg-quick[2232]: [#] ip -4 address add 10.10.10.20 dev wg0
     Nov 13 17:10:50 wireguard.client2 wg-quick[2232]: [#] ip link set mtu 1420 up dev wg0
     Nov 13 17:10:50 wireguard.client2 wg-quick[2232]: [#] mount `8.8.8.8' /etc/resolv.conf
-    Nov 13 17:10:50 wireguard.client2 wg-quick[2232]: [#] ip -4 route add 10.10.10.0/24 dev wg0
+    Nov 13 17:10:50 wireguard.client2 wg-quick[2232]: [#] ip -4 route add 0.0.0.0/0 dev wg0
     Nov 13 17:10:50 wireguard.client2 systemd[1]: Started WireGuard via wg-quick(8) for wg0.
     ```
 
