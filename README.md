@@ -7,7 +7,10 @@
 
 > **Sur VirtualBox : Carte NAT + 1 Host-only : `192.168.100.1/24`**
 > 
-> **Seul le serveur possède une carte NAT**
+> **Seul le serveur possède une carte NAT, les clients accèdents à internet via l'interface wg0 ( le VPN )**
+>
+>**La machine de backup possède aussi une carte NAT pour les mises à jour et l'installation des nfs-utils**
+
 
 ### **Tableau d'adressage**
 
@@ -15,7 +18,7 @@
 | ---------------- | -------- 			  | -------- 			 | -------- 		   | --------   |
 | NAT       	   | Oui      			  | X        			 | X        		   | Oui           |
 | Host-Only        | `192.168.100.250/24` | `192.168.100.251/24` | `192.168.100.252/24`| `192.168.100.253/24`           |
-| wg01 (wireguard) | `10.10.10.1`         | `10.10.10.10`        | `10.10.10.20`       |  X         |
+| wg0 (wireguard) | `10.10.10.1`         | `10.10.10.10`        | `10.10.10.20`       |  X         |
 
 
 - :computer: **wireguard.server**
