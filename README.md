@@ -1,7 +1,7 @@
 # B2 Wireguard VPN - MONTAGNIER Yrlan & ABEILLE Paul-Antoine
 # Sommaire
 
-0. [Configuration de base de la machine](https://gitlab.com/yrlan.montagnier/B2_WireguardVPN/-/edit/main/README.md#configuration-de-base-de-la-machine)
+0. [Configuration de base de la machine](#configuration-de-base-de-la-machine)
 1. [Installation](./INSTALLATION.md)
 2. [Mise en place d'un système de backup](./BACKUP.md)
 3. [Configuration](./CONFIGURATION.md)
