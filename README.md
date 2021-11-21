@@ -1,6 +1,8 @@
 # B2 Wireguard VPN - MONTAGNIER Yrlan & ABEILLE Paul-Antoine
 # Sommaire
 
+1. [Installation](./INSTALLATION.md)
+
 # Configuration de base de la machine
 
 ## **Paramètres réseaux + hostname**
