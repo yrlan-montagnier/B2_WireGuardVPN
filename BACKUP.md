@@ -62,7 +62,7 @@ public (active)
   icmp-blocks:
   rich rules:
 ```
-### Sur les machines à backup :computer: `wireguard.client`
+### Sur le serveur :computer: `wireguard.server`
 ```bash
 # Config du client
 [yrlan@wireguard ~]$ sudo dnf -y install nfs-utils
@@ -79,6 +79,25 @@ Domain = wireguard
 [yrlan@wireguard ~]$ sudo mount -a -v | grep /etc
 /etc/wireguard           : successfully mounted
 ```
+
+### Sur les machines à backup :computer: `wireguard.client`
+```bash
+# Config du client
+[yrlan@wireguard ~]$ sudo dnf -y install nfs-utils
+[...]
+[yrlan@wireguard ~]$ sudo nano /etc/idmapd.conf
+[yrlan@wireguard ~]$ cat /etc/idmapd.conf | grep wireguard 
+Domain = wireguard
+
+# Montage auto de la partition à l'aide de /etc/fstab
+[yrlan@wireguard ~]$ sudo nano /etc/fstab
+[yrlan@wireguard ~]$ sudo cat /etc/fstab | grep 192
+192.168.100.253:/srv/backups/wireguard.client /etc/wireguard/ nfs defaults 0 0
+
+[yrlan@wireguard ~]$ sudo mount -a -v | grep /etc
+/etc/wireguard           : successfully mounted
+```
+
 
 ## Mise en place d'un service avec un timer
 Maintenant qu'on récupère le contenu de /etc/wireguard de chaque machine dans /srv/backups, on va faire une archive de ce dossier /srv/backups tous les jours à 00h00
