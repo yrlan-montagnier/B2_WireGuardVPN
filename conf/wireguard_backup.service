@@ -4,7 +4,7 @@ Description=Our own lil backup service (TP2)
 [Service]
 ExecStart=/srv/wireguard_backup.sh /srv/archives /srv/backups/wireguard.server
 ExecStart=/srv/wireguard_backup.sh /srv/archives /srv/backups/wireguard.client
-ExecStart=/srv/wireguard_backup.sh /srv/archives /srv/backups/wireguard.clien
+ExecStart=/srv/wireguard_backup.sh /srv/archives /srv/backups/wireguard.client2
 Type=oneshot
 RemainAfterExit=no
 
