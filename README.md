@@ -7,7 +7,9 @@
 3. [Configuration](./CONFIGURATION.md)
 4. [Mise en place de NetData pour le monitoring](./MONITORING.md)
 
-# Configuration de base de la machine
+# Configuration de base des machines
+
+**Ici nous avons mis les paramètres réseaux ainsi que le nom des machines**
 
 ## **Paramètres réseaux + hostname**
 
