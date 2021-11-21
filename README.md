@@ -1,7 +1,11 @@
 # B2 Wireguard VPN - MONTAGNIER Yrlan & ABEILLE Paul-Antoine
 # Sommaire
 
+0. [Configuration de base de la machine](https://gitlab.com/yrlan.montagnier/B2_WireguardVPN/-/edit/main/README.md#configuration-de-base-de-la-machine)
 1. [Installation](./INSTALLATION.md)
+2. [Mise en place d'un système de backup](./BACKUP.md)
+3. [Configuration](./CONFIGURATION.md)
+4. [Mise en place de NetData pour le monitoring](./MONITORING.md)
 
 # Configuration de base de la machine
 
@@ -16,11 +20,11 @@
 
 ### **Tableau d'adressage**
 
-| Interface 	   | `wireguard.server`   | `wireguard.client`   | `wireguard.client2` | `backup.wireguard`           |
-| ---------------- | -------- 			  | -------- 			 | -------- 		   | --------   |
-| NAT       	   | Oui      			  | X        			 | X        		   | Oui           |
-| Host-Only        | `192.168.100.250/24` | `192.168.100.251/24` | `192.168.100.252/24`| `192.168.100.253/24`           |
-| wg0 (wireguard) | `10.10.10.1`         | `10.10.10.10`        | `10.10.10.20`       |  X         |
+| Interface 	   | `wireguard.server`   | `wireguard.client`   | `wireguard.client2` | `backup.wireguard`  |
+| ---------------- | -------- 			  | -------- 			 | -------- 		   | --------            |
+| NAT       	   | Oui      			  | X        			 | X        		   | Oui                 |
+| Host-Only        | `192.168.100.250/24` | `192.168.100.251/24` | `192.168.100.252/24`| `192.168.100.253/24`|
+| wg0 (wireguard)  | `10.10.10.1`         | `10.10.10.10`        | `10.10.10.20`       |  X                  |
 
 
 - :computer: **wireguard.server**
