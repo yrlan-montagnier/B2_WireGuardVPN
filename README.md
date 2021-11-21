@@ -11,11 +11,11 @@
 
 ### **Tableau d'adressage**
 
-| Interface 	   | `wireguard.server`   | `wireguard.client`   | `wireguard.client2` |
-| ---------------- | -------- 			  | -------- 			 | -------- 		   |
-| NAT       	   | Oui      			  | X        			 | X        		   |
-| Host-Only        | `192.168.100.250/24` | `192.168.100.251/24` | `192.168.100.252/24`|
-| wg01 (wireguard) | `10.10.10.1`         | `10.10.10.10`        | `10.10.10.20`       |
+| Interface 	   | `wireguard.server`   | `wireguard.client`   | `wireguard.client2` | `backup.wireguard`           |
+| ---------------- | -------- 			  | -------- 			 | -------- 		   | --------   |
+| NAT       	   | Oui      			  | X        			 | X        		   | Oui           |
+| Host-Only        | `192.168.100.250/24` | `192.168.100.251/24` | `192.168.100.252/24`| `192.168.100.253/24`           |
+| wg01 (wireguard) | `10.10.10.1`         | `10.10.10.10`        | `10.10.10.20`       |  X         |
 
 
 - :computer: **wireguard.server**
