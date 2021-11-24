@@ -6,6 +6,7 @@
 2. [Mise en place d'un système de backup](./BACKUP.md)
 3. [Configuration](./CONFIGURATION.md)
 4. [Mise en place de NetData pour le monitoring](./MONITORING.md)
+5. [Scripts pour installer plus rapidement](./SCRIPTS)
 
 # Configuration de base des machines
 
